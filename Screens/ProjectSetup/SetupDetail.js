@@ -689,6 +689,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 10,
     fontSize: 18,
+    color: 'black',
     padding: 17,
     marginTop: 15,
     backgroundColor: '#FFF',

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'; 
+import React, { useState, useCallback , useEffect } from 'react'; 
  import { View, Text, TouchableOpacity, StyleSheet, FlatList, ScrollView, Dimensions } from 'react-native';
  import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
  import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -36,6 +36,14 @@ import React, { useState, useCallback } from 'react';
      const user = auth().currentUser;
      return user ? user.email : null;
    };
+
+   useEffect(() => {
+    const interval = setInterval(() => {
+      loadProjectDetails();  // Refresh data every 30 seconds
+    }, 10000);
+  
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, [projectId]); // Re-run if projectId changes
 
    
 
@@ -137,7 +145,7 @@ import React, { useState, useCallback } from 'react';
     }, 1000);  // Delay to allow note creation
 };
 
-const handleUploadNotesPress = async () => {
+const handleUploadNotesPress = async () => { 
   const userEmail = getUserEmail();
   if (!userEmail) {
     console.error('No logged-in user email found.');
@@ -153,7 +161,6 @@ const handleUploadNotesPress = async () => {
       return;
     }
 
-    // Firestore batch update
     const projectRef = firestore()
       .collection('UserInformation')
       .doc(userEmail)
@@ -161,66 +168,140 @@ const handleUploadNotesPress = async () => {
       .doc(projectId);
 
     const batch = firestore().batch();
-    unuploadedNotes.forEach(note => {
-      const noteRef = projectRef.collection('Uploaded Note').doc(note.Serial.toString());
-      batch.set(noteRef, { ...note, isUploaded: true });
-    });
+    const updatedNotes = [...uploadedNotes];
 
+    for (let note of unuploadedNotes) {
+      try {
+        console.log(`Uploading images for note ${note.Serial}...`);
+
+        // Upload vial and habitat images
+        const uploadedVialImages = await Promise.all(note.images.map(image => uploadToCloudinary(image)));
+        const uploadedHabitatImages = await Promise.all(note.imagess.map(image => uploadToCloudinary(image)));
+
+        // Update note with Cloudinary URLs
+        note.images = uploadedVialImages;
+        note.imagess = uploadedHabitatImages;
+        note.isUploaded = true;
+
+        console.log(`Images uploaded for note ${note.Serial}, updating Firestore...`);
+
+        // Firestore batch update
+        const noteRef = projectRef.collection('Uploaded Note').doc(note.Serial.toString());
+        batch.set(noteRef, note);
+      } catch (error) {
+        console.error(`Error uploading images for note ${note.Serial}:`, error);
+      }
+    }
+
+    console.log('Committing batch to Firestore...');
+    // Commit batch to Firestore
     await batch.commit();
     console.log('Notes uploaded successfully.');
 
-    // Upload to `NotesUploaded` collection
+    // Update the NotesUploaded collection
     const notesUploadedRef = firestore().collection('NotesUploaded').doc(project.projectName);
     const existingProjectDoc = await notesUploadedRef.get();
 
     if (existingProjectDoc.exists) {
-      console.log('Appending notes to existing NotesUploaded...');
       const existingNotes = existingProjectDoc.data().notes || [];
-      const updatedNotes = [...existingNotes, ...unuploadedNotes.map(note => ({
-        ...note,
-        isUploaded: true
-      }))];
-
-      await notesUploadedRef.update({ notes: updatedNotes });
+      const updatedNotesList = [...existingNotes, ...unuploadedNotes];
+      console.log('Updating NotesUploaded collection with new notes...');
+      await notesUploadedRef.update({ notes: updatedNotesList });
     } else {
-      console.log('Creating new NotesUploaded entry...');
-      await notesUploadedRef.set({
-        projectName: project.projectName,
-        notes: unuploadedNotes.map(note => ({
-          ...note,
-          isUploaded: true
-        }))
-      });
+      console.log('Creating new NotesUploaded document...');
+      await notesUploadedRef.set({ notes: unuploadedNotes });
     }
 
-    // Update project as uploaded
+    // Update project status in Firestore if all notes are uploaded
     const allNotesUploaded = uploadedNotes.every(note => note.isUploaded || unuploadedNotes.includes(note));
     if (allNotesUploaded) {
+      console.log('All notes uploaded, updating project status...');
       await projectRef.update({ isUploaded: true });
       updateProjectUploadStatus(projectId, true);
     }
 
-    // Update local storage
-    const updatedNotes = uploadedNotes.map(note =>
+    // Update local storage and AsyncStorage
+    const finalNotes = uploadedNotes.map(note =>
       unuploadedNotes.some(unNote => unNote.Serial === note.Serial)
         ? { ...note, isUploaded: true }
         : note
     );
 
-    setUploadedNotes(updatedNotes);
-    await AsyncStorage.setItem(projectId, JSON.stringify(updatedNotes));
+    console.log('Updating AsyncStorage with uploaded notes...');
+    setUploadedNotes(finalNotes);
+    await AsyncStorage.setItem(projectId, JSON.stringify(finalNotes));
 
     console.log('AsyncStorage updated with uploaded notes.');
-    ///console.log(axios);
 
-    // Upload project details to Excel sheet
-    await updateExcelFile(project, uploadedNotes );
-
-    
   } catch (error) {
     console.error('Error uploading notes:', error);
   }
 };
+
+const uploadToCloudinary = async (image) => {
+  const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/dvockpszn/image/upload'; // Replace with your Cloudinary URL
+  const formData = new FormData();
+  formData.append('file', {
+    uri: image.uri,
+    type: image.type || 'image/jpeg', // Ensure type is set
+    name: image.name || 'upload.jpg',
+  });
+  
+  formData.append('upload_preset', 'profile2');  // Replace with your Cloudinary upload preset
+
+  try {
+    console.log('Preparing to upload image to Cloudinary...');
+    console.log('Image details:', {
+      uri: image.uri,
+      type: image.type,
+      name: image.name,
+    });
+
+    // Log the form data to ensure it's correctly built
+    console.log('Form data being sent to Cloudinary:', formData);
+
+    // Log before making the upload request
+    console.log('Sending POST request to Cloudinary...');
+
+    const response = await fetch(CLOUDINARY_URL, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    
+
+    console.log('Cloudinary response status:', response.status); // Log response status
+
+    // Log response headers for troubleshooting
+    const responseHeaders = response.headers;
+    console.log('Cloudinary response headers:', responseHeaders);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Cloudinary upload failed with status:', response.status, errorText);
+      throw new Error(`Upload failed: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('Cloudinary upload response:', data); // Log the full Cloudinary response
+
+    // Check for the presence of secure_url in the response
+    if (data.secure_url) {
+      console.log('Image uploaded successfully to Cloudinary. URL:', data.secure_url);
+      return data.secure_url;  // Return the Cloudinary URL
+    } else {
+      console.error('Cloudinary response did not contain secure_url:', data);
+      throw new Error('Image upload failed, secure_url missing.');
+    }
+  } catch (error) {
+    console.error('Error uploading image to Cloudinary:', error);
+    throw error;
+  }
+};
+
+
 
 const updateExcelFile = async (project, uploadedNotes, existingFilePath) => {
   try {

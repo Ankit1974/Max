@@ -21,6 +21,11 @@ import SignUpScreen from '../Screens/User/SignUpScreen';
 import ProfileScreen from '../Screens/ProfileScreens/ProfileScreens';
 import UploadSetupScreen from '../Screens/ProjectSetup/UploadSetupScreen';
 import MangerView from '../Screens/UploadedDataCollection/MangerView';
+import SavedLocationsScreen from '../Screens/Map/SavedLocationsScreen';
+import RouteDetailsScreen from '../Screens/Map/RouteDetailsScreen';
+import MangerVialPictureUplaoded from '../Screens/UploadedDataCollection/MangerVialPictureUplaoded';
+import ManagerHabitatPictureUploaded from '../Screens/UploadedDataCollection/ManagerHabitatPictureUploaded';
+//import RouteDetailsScreen from '../Screens/Map/RouteDetailsScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -45,6 +50,9 @@ const SetupStack = () => (
     <Stack.Screen name="UploadSetupScreen" component={UploadSetupScreen} options={{ headerShown: false }}/>
     <Stack.Screen name="MangerView" component={MangerView} options={{ headerShown: false }}/>
     <Stack.Screen name="Home2" component={HomeScreen} options={{ headerShown: false }}/>
+    <Stack.Screen name="Project" component={CollectScreen} options={{ headerShown: false }} />
+    <Stack.Screen name="MangerVialPictureUplaoded" component={MangerVialPictureUplaoded} options={{ headerShown: false }} />
+    <Stack.Screen name="ManagerHabitatPictureUploaded " component={ManagerHabitatPictureUploaded} options={{ headerShown: false }} />
   </Stack.Navigator>
 );
 
@@ -62,6 +70,15 @@ const CollectStack = () => (
     <Stack.Screen name="VialPicture" component={VialPicture} options={{ headerShown: false }}/>
     <Stack.Screen name="HabitatPicture" component={HabitatPicture} options={{ headerShown: false }}/>
     <Stack.Screen name="Home2" component={HomeScreen} options={{ headerShown: false }}/>
+  </Stack.Navigator>
+);
+
+const Map = () => (
+  <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Screen name="MapScreen" component={MapScreen} />
+    <Stack.Screen name="SavedLocationsScreen" component={SavedLocationsScreen} />
+    <Stack.Screen name="RouteDetailsScreen" component={RouteDetailsScreen} />
+    
   </Stack.Navigator>
 );
 
@@ -108,7 +125,7 @@ const MainTabs = () => (
     />
     <Tab.Screen
       name="Map"
-      component={MapScreen}
+      component={Map}
       options={{ tabBarLabel: 'Map' }}
     />
   </Tab.Navigator>

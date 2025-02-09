@@ -121,9 +121,12 @@ useEffect(() => {
        
            // Check if projectId exists before navigating
            if (projectId) {
-             navigation.navigate('VialPictureUploaded', { 
-               projectId: projectId,        // Pass the project ID
-               serial: noteNumber,   
+             navigation.navigate('MangerVialPictureUplaoded', { 
+               //projectId: projectId,        // Pass the project ID
+              // serial: noteNumber,   
+               projectId,
+               noteSerial ,
+                 projectName
              });
            } else {
              console.error('Project ID is not defined!');
@@ -146,9 +149,12 @@ useEffect(() => {
        
            // Check if projectId exists before navigating
            if (projectId) {
-             navigation.navigate('HabitaPictureUploaded', { 
-               projectId: projectId,        // Pass the project ID
-               serial: noteNumber,   
+             navigation.navigate('ManagerHabitatPictureUploaded ', { 
+               //projectId: projectId,        // Pass the project ID
+               //serial: noteNumber,   
+               projectId,
+               noteSerial ,
+                 projectName
              });
            } else {
              console.error('Project ID is not defined!');
@@ -217,9 +223,6 @@ useEffect(() => {
                   O2dis :{' '}
                   <Text style={styles.value}>{data?.o2dis  || 'N/A'} %</Text>
                 </Text>
-        <Text style={styles.label}>
-          Hardness : <Text style={styles.value}>{data?.hardness || 'N/A'}</Text>
-        </Text>
         <Text style={styles.label}>
           pH : <Text style={styles.value}>{data?.pH || 'N/A'}</Text>
         </Text>

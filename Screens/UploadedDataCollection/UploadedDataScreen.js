@@ -269,9 +269,6 @@ const UploadedData = ({route}) => {
           <Text style={styles.value}>{data.o2dis  || 'N/A'} %</Text>
         </Text>
         <Text style={styles.label}>
-          Hardness : <Text style={styles.value}>{data.hardness || 'N/A'}</Text>
-        </Text>
-        <Text style={styles.label}>
           pH : <Text style={styles.value}>{data.pH || 'N/A'}</Text>
         </Text>
         <Text style={styles.label}>
