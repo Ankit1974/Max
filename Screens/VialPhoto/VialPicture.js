@@ -130,7 +130,7 @@ const VialPicture = ({route}) => {
     const options = {
       mediaType: 'photo',
       cameraType: 'back',
-      quality: 1,
+      quality: 0.7,
     };
 
     try {
@@ -145,7 +145,7 @@ const VialPicture = ({route}) => {
         const sizeInMB = (asset.fileSize / (1024 * 1024)).toFixed(2);
 
         //const projectNumber = await getProjectNumber();
-       // console.log('Fetched Project Number:', projectNumber); // Log project number
+        // console.log('Fetched Project Number:', projectNumber); // Log project number
 
         const vialCount = images.length + 1;
         const generatedImageName = `${projectName}_${localityNumber}_V0${vialCount}`;
@@ -156,9 +156,10 @@ const VialPicture = ({route}) => {
           sizeMB: sizeInMB,
         };
 
+        const newImagesList = [...images, newImage];
         // Update images array with new image
-        setImages(prevImages => [...prevImages, newImage]);
-        goBack(images);
+        setImages(newImagesList);
+        goBack(newImagesList);
         if (note) {
           const updatedNote = {
             ...note,
@@ -279,10 +280,12 @@ const VialPicture = ({route}) => {
             <FontAwesome name="camera" size={20} color="black" />
             <Text style={styles.captureButtonText}>Capture</Text>
           </TouchableOpacity> */}
-           <TouchableOpacity style={styles.captureButton} onPress={openCameraHabitat}>
-        <Icon name="camera" size={26} color="black" />
-        <Text style={styles.buttonText}>Capture</Text>
-      </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.captureButton}
+            onPress={openCameraHabitat}>
+            <Icon name="camera" size={26} color="black" />
+            <Text style={styles.buttonText}>Capture</Text>
+          </TouchableOpacity>
         </>
       )}
 
@@ -379,26 +382,26 @@ const styles = StyleSheet.create({
     paddingBottom: height * 0.02,
   },
   captureButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#48938F",
-    paddingVertical:  height * 0.022,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#48938F',
+    paddingVertical: height * 0.022,
     paddingHorizontal: width * 0.1,
     borderRadius: 10,
     marginTop: 20,
-    left:width * 0.09,
-    marginRight:width * 0.19,
+    left: width * 0.09,
+    marginRight: width * 0.19,
     borderWidth: 1,
-    borderColor: "black",
+    borderColor: 'black',
     marginBottom: height * 0.05,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   buttonText: {
     marginLeft: width * 0.04,
     fontSize: width * 0.06,
-    fontWeight: "bold",
-    color: "black",
+    fontWeight: 'bold',
+    color: 'black',
   },
 });
 
