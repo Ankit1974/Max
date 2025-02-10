@@ -479,7 +479,7 @@ const CollectDataScreen = ({noteId}) => {
     try {
       const result = await launchCamera({
         mediaType: 'photo',
-        quality: 1,
+        quality: 0.7,
         saveToPhotos: true,
       });
 
@@ -552,7 +552,7 @@ const CollectDataScreen = ({noteId}) => {
     const options = {
       mediaType: 'photo',
       cameraType: 'back',
-      quality: 1,
+      quality: 0.7,
     };
 
     try {
@@ -772,7 +772,10 @@ const CollectDataScreen = ({noteId}) => {
                       projectName,
                       localityNumber,
                       imageList: images,
-                      goBack: list => setImages(list),
+                      goBack: list => {
+                        console.log('sdfsdfsdf>>>>>', list);
+                        setImages(list);
+                      },
                     });
                   } else {
                     console.error('Project ID is not defined!');
@@ -1392,7 +1395,7 @@ const styles = StyleSheet.create({
   buttonText2: {
     fontSize: 16,
     fontWeight: '600',
-    color:"black"
+    color: 'black',
   },
 });
 

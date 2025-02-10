@@ -110,7 +110,7 @@ const HabitatPicture = ({route}) => {
     const options = {
       mediaType: 'photo',
       cameraType: 'back',
-      quality: 1,
+      quality: 0.7,
     };
 
     try {
@@ -156,7 +156,8 @@ const HabitatPicture = ({route}) => {
       }
     } catch (error) {
       console.error('Error opening camera: ', error);
-      Alert.alert('Error', 'Failed to open camera');s
+      Alert.alert('Error', 'Failed to open camera');
+      s;
     }
   };
 
@@ -245,10 +246,12 @@ const HabitatPicture = ({route}) => {
             <FontAwesome name="camera" size={20} color="black" />
             <Text style={styles.captureButtonText}>Capture</Text>
           </TouchableOpacity> */}
-          <TouchableOpacity style={styles.captureButton} onPress={openCameraHabitat}>
-                  <Icon name="camera" size={26} color="black" />
-                  <Text style={styles.buttonText}>Capture</Text>
-                </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.captureButton}
+            onPress={openCameraHabitat}>
+            <Icon name="camera" size={26} color="black" />
+            <Text style={styles.buttonText}>Capture</Text>
+          </TouchableOpacity>
         </>
       )}
     </SafeAreaView>
@@ -331,26 +334,26 @@ const styles = StyleSheet.create({
     paddingBottom: height * 0.02,
   },
   captureButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#48938F",
-    paddingVertical:  height * 0.022,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#48938F',
+    paddingVertical: height * 0.022,
     paddingHorizontal: width * 0.1,
     borderRadius: 10,
     marginTop: 20,
-    left:width * 0.09,
-    marginRight:width * 0.19,
+    left: width * 0.09,
+    marginRight: width * 0.19,
     borderWidth: 1,
-    borderColor: "black",
+    borderColor: 'black',
     marginBottom: height * 0.05,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   buttonText: {
     marginLeft: width * 0.04,
     fontSize: width * 0.06,
-    fontWeight: "bold",
-    color: "black",
+    fontWeight: 'bold',
+    color: 'black',
   },
 });
 
