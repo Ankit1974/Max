@@ -392,7 +392,6 @@ const ProjectDetails = () => {
           }
         });
 
-        // Set column widths for the header row
         setColumnWidths(
           worksheet,
           [
@@ -404,7 +403,6 @@ const ProjectDetails = () => {
         XLSX.utils.book_append_sheet(workbook, worksheet, 'final');
       }
 
-      // Get existing data
       const existingData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
 
       // Append each note as a separate row
@@ -446,11 +444,9 @@ const ProjectDetails = () => {
         existingData.push(rowData);
       });
 
-      // Update worksheet with new data
       worksheet = XLSX.utils.aoa_to_sheet(existingData);
       workbook.Sheets['final'] = worksheet;
 
-      // Set column widths after converting to a sheet
       setColumnWidths(
         worksheet,
         [
@@ -506,6 +502,22 @@ const ProjectDetails = () => {
       month: 'short',
       day: 'numeric',
     });
+  };
+
+  const checkIfExpired = dateString => {
+    const givenDate = new Date(dateString);
+    const currentDate = new Date(); // Current date and time
+    const givenDateOnly = new Date(
+      givenDate.getFullYear(),
+      givenDate.getMonth(),
+      givenDate.getDate(),
+    );
+    const currentDateOnly = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      currentDate.getDate(),
+    );
+    return givenDateOnly < currentDateOnly ? false : true;
   };
 
   if (!project) {
@@ -588,19 +600,34 @@ const ProjectDetails = () => {
         )}
       </View>
 
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={styles.uploadButton}
-          onPress={handleUploadNotesPress}>
-          <Text style={styles.uploadButtonText}>Upload</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.addButton2}
-          onPress={handleAddNotesPress}>
-          <Text style={styles.addButtonText2}>Add Site</Text>
-        </TouchableOpacity>
-      </View>
+      {
+        <View style={styles.buttonContainer}>
+          {checkIfExpired(project.toDate) ? (
+            <>
+              <TouchableOpacity
+                style={styles.uploadButton}
+                onPress={handleUploadNotesPress}>
+                <Text style={styles.uploadButtonText}>Upload</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.addButton2}
+                onPress={handleAddNotesPress}>
+                <Text style={styles.addButtonText2}>Add Site</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <TouchableOpacity
+                style={styles.uploadExelStyle}
+                onPress={() => {
+                  handleUploadNotesPress();
+                }}>
+                <Text style={styles.addButtonText2}>Upload Excel File</Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
+      }
     </ScrollView>
   );
 };
@@ -699,6 +726,17 @@ const styles = StyleSheet.create({
   },
   addButton2: {
     backgroundColor: '#48938F',
+    paddingVertical: screenHeight * 0.018,
+    alignItems: 'center',
+    paddingHorizontal: screenWidth * 0.05,
+    borderRadius: 7,
+    borderWidth: 2,
+    borderColor: 'black',
+    marginBottom: screenHeight * 0.04,
+  },
+  uploadExelStyle: {
+    backgroundColor: '#48938F',
+    width: '100%',
     paddingVertical: screenHeight * 0.018,
     alignItems: 'center',
     paddingHorizontal: screenWidth * 0.05,

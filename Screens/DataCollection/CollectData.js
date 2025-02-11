@@ -25,8 +25,11 @@ import Dialog from 'react-native-dialog';
 import {useRoute, useFocusEffect} from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
+import {useUploadStatus} from '../../ContextAPI/UploadStatusProvider';
 
 const CollectDataScreen = ({noteId}) => {
+  const {projects, updateProjectUploadStatus, uploadedNotes, setUploadedNotes} =
+    useUploadStatus();
   const [selectedHabitats, setSelectedHabitats] = useState([]);
   const [selectedSubstrates, setSelectedSubstrates] = useState([]);
   const [selectedWaterTypes, setSelectedWaterTypes] = useState([]);
@@ -455,10 +458,12 @@ const CollectDataScreen = ({noteId}) => {
           note.Serial === route.params.note.Serial ? newNote : note,
         );
         await AsyncStorage.setItem(projectId, JSON.stringify(updatedNotes));
+        setUploadedNotes(updatedNotes);
       } else {
         // Add new note
         notes.push(newNote);
         await AsyncStorage.setItem(projectId, JSON.stringify(notes));
+        setUploadedNotes(notes);
       }
 
       // Trigger callback if provided
@@ -468,7 +473,6 @@ const CollectDataScreen = ({noteId}) => {
 
       // Navigate back to the ProjectDetails screen
       navigation.navigate('ProjectDetails', {projectId});
-      k;
     } catch (error) {
       console.error('Error saving note to AsyncStorage:', error);
     }
