@@ -407,8 +407,8 @@ const ProjectDetails = () => {
 
       // Append each note as a separate row
       uploadedNotes.forEach(note => {
-        const vialPicturesURIs = note.images.map(img => img.uri).join(', ');
-        const habitatPicturesURIs = note.imagess.map(img => img.uri).join(', ');
+        const vialPicturesURIs = note.images.map(img => img).join(', ');
+        const habitatPicturesURIs = note.imagess.map(img => img).join(', ');
         const selectedWaterTypes = note.selectedWaterTypes.join(', '); // Join elements of selectedWaterTypes array
         const selectedSubstrates = note.selectedSubstrates.join(', ');
         const selectedGeology = note.selectedGeology.join(', ');
