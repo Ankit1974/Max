@@ -41,6 +41,8 @@ const CollectScreen = () => {
         const snapshot = await allocatedProjectsRef.get();
         const projects = snapshot.docs.map(doc => doc.data());
 
+        console.log('Fetched Projects:', projects); // Log the fetched projects
+
         setAllocatedProjects(projects);
       }
     } catch (error) {

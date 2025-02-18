@@ -26,7 +26,6 @@ const HabitatPicture = ({route}) => {
     serial,
     note: initialNote,
     projectName,
-    noteSerial2,
     localityNumber,
     imageList,
     goBack,
@@ -211,7 +210,7 @@ const HabitatPicture = ({route}) => {
                   serial,
                 });
               }}>
-              <Text style={styles.backText2}>{'\u2039'}</Text>
+              {/* <Text style={styles.backText2}>{'\u2039'}</Text> */}
             </TouchableOpacity>
             <Text style={styles.header}>Habitat Picture</Text>
           </View>
@@ -266,6 +265,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     color: 'black',
+    marginLeft: width * 0.28
   },
   headerContainer: {
     flexDirection: 'row',

@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Dimensions,
   TextInput,
+  ScrollView,
   Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -75,6 +76,7 @@ const LoginScreen = ({ navigation }) => {
   
 
   return (
+    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
     <View style={styles.container}>
       <Image
         source={{ uri: 'logo4' }} // Ensure this is a valid image URL
@@ -145,6 +147,7 @@ const LoginScreen = ({ navigation }) => {
         </Text>
       </Text>
     </View>
+    </ScrollView>
   );
 };
 
@@ -154,7 +157,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
     paddingHorizontal: width * 0.05,
     justifyContent: 'center',
-    height: height,
+    //height: height,
   },
   image: {
     width: width * 0.8,
@@ -215,6 +218,7 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     height: height * 0.05,
+    color:"black"
   },
   eyeIconWrapper: {
     marginLeft: width * 0.03,

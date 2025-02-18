@@ -14,6 +14,7 @@ import MapboxGL from '@rnmapbox/maps';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Share from 'react-native-share';
 import Geolocation from '@react-native-community/geolocation';
+//import Geolocation from 'react-native-geolocation-service';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 
@@ -25,25 +26,35 @@ const MapScreen = ({ navigation }) => {
   const [currentLocation, setCurrentLocation] = useState(null);
   const [offlineRegion, setOfflineRegion] = useState(null);
   const [route, setRoute] = useState(null);
-  const [savedLocations, setSavedLocations] = useState([]);
+  // const [savedLocations, setSavedLocations] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
 
 
   useEffect(() => {
     requestLocationPermission();
-    loadSavedLocations();
+    //loadSavedLocations();
   }, []);
 
   const requestLocationPermission = async () => {
     if (Platform.OS === 'android') {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-      );
-      if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+      const granted = await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION
+      ]);
+  
+      if (
+        granted[PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION] !== PermissionsAndroid.RESULTS.GRANTED &&
+        granted[PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION] !== PermissionsAndroid.RESULTS.GRANTED
+      ) {
         Alert.alert('Permission Denied', 'Location permission is required.');
         return;
       }
     }
+  
+    fetchCurrentLocation();
+  };
+  
+  const fetchCurrentLocation = () => {
     Geolocation.getCurrentPosition(
       (position) => {
         setCurrentLocation({
@@ -52,11 +63,14 @@ const MapScreen = ({ navigation }) => {
         });
       },
       (error) => {
-        Alert.alert('Error', 'Unable to fetch current location.');
+        console.error('Geolocation error:', error);
+        Alert.alert('Error', error.message);
       },
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+      { enableHighAccuracy: false, timeout: 20000, maximumAge: 1000 } // Set enableHighAccuracy to false
     );
+    
   };
+  
 
   const fetchSuggestions = async (query) => {
     if (!query) {
@@ -87,50 +101,50 @@ const MapScreen = ({ navigation }) => {
 
   
 
-  const downloadOfflineRegion = async () => {
-    if (!currentLocation) {
-      Alert.alert('Error', 'Current location not available.');
-      return;
-    }
+  // const downloadOfflineRegion = async () => {
+  //   if (!currentLocation) {
+  //     Alert.alert('Error', 'Current location not available.');
+  //     return;
+  //   }
 
-    const bounds = [
-      [currentLocation.longitude - 0.1, currentLocation.latitude - 0.1],
-      [currentLocation.longitude + 0.1, currentLocation.latitude + 0.1],
-    ];
+  //   const bounds = [
+  //     [currentLocation.longitude - 0.1, currentLocation.latitude - 0.1],
+  //     [currentLocation.longitude + 0.1, currentLocation.latitude + 0.1],
+  //   ];
 
-    try {
-      const packs = await MapboxGL.offlineManager.getPacks();
-      if (packs.some((pack) => pack.name === 'offline_map')) {
-        Alert.alert('Offline Map', 'Region already downloaded.');
-        return;
-      }
+  //   try {
+  //     const packs = await MapboxGL.offlineManager.getPacks();
+  //     if (packs.some((pack) => pack.name === 'offline_map')) {
+  //       Alert.alert('Offline Map', 'Region already downloaded.');
+  //       return;
+  //     }
 
-      const region = await MapboxGL.offlineManager.createPack({
-        name: 'offline_map',
-        styleURL: MapboxGL.StyleURL.Street,
-        bounds,
-        minZoom: 10,
-        maxZoom: 16,
-        metadata: { name: 'Offline Map' },
-      });
+  //     const region = await MapboxGL.offlineManager.createPack({
+  //       name: 'offline_map',
+  //       styleURL: MapboxGL.StyleURL.Street,
+  //       bounds,
+  //       minZoom: 10,
+  //       maxZoom: 16,
+  //       metadata: { name: 'Offline Map' },
+  //     });
 
-      setOfflineRegion(region);
-      Alert.alert('Offline Map', 'Map downloaded for offline use.');
-    } catch (error) {
-      Alert.alert('Error', 'Failed to download offline map.');
-    }
-  };
+  //     setOfflineRegion(region);
+  //     Alert.alert('Offline Map', 'Map downloaded for offline use.');
+  //   } catch (error) {
+  //     Alert.alert('Error', 'Failed to download offline map.');
+  //   }
+  // };
 
-  const loadSavedLocations = async () => {
-    try {
-      const data = await AsyncStorage.getItem('savedLocations');
-      if (data) {
-        setSavedLocations(JSON.parse(data));
-      }
-    } catch (error) {
-      console.error('Error loading saved locations:', error);
-    }
-  };
+  // const loadSavedLocations = async () => {
+  //   try {
+  //     const data = await AsyncStorage.getItem('savedLocations');
+  //     if (data) {
+  //       setSavedLocations(JSON.parse(data));
+  //     }
+  //   } catch (error) {
+  //     console.error('Error loading saved locations:', error);
+  //   }
+  // };
 
   const searchLocationOnline = async () => {
     if (!searchQuery) return;
@@ -157,32 +171,32 @@ const MapScreen = ({ navigation }) => {
   };
   
 
-  const fetchOfflineDirections = async () => {
-    if (!currentLocation || !selectedLocation) return;
+  // const fetchOfflineDirections = async () => {
+  //   if (!currentLocation || !selectedLocation) return;
 
-    try {
-      const storedRoute = await AsyncStorage.getItem('offlineRoute');
-      if (storedRoute) {
-        setRoute(JSON.parse(storedRoute));
-        return;
-      }
+  //   try {
+  //     const storedRoute = await AsyncStorage.getItem('offlineRoute');
+  //     if (storedRoute) {
+  //       setRoute(JSON.parse(storedRoute));
+  //       return;
+  //     }
 
-      const routeData = {
-        geometry: {
-          type: 'LineString',
-          coordinates: [
-            [currentLocation.longitude, currentLocation.latitude],
-            [selectedLocation.longitude, selectedLocation.latitude],
-          ],
-        },
-      };
+  //     const routeData = {
+  //       geometry: {
+  //         type: 'LineString',
+  //         coordinates: [
+  //           [currentLocation.longitude, currentLocation.latitude],
+  //           [selectedLocation.longitude, selectedLocation.latitude],
+  //         ],
+  //       },
+  //     };
 
-      setRoute(routeData);
-      await AsyncStorage.setItem('offlineRoute', JSON.stringify(routeData));
-    } catch (error) {
-      Alert.alert('Error', 'Could not fetch offline directions.');
-    }
-  };
+  //     setRoute(routeData);
+  //     await AsyncStorage.setItem('offlineRoute', JSON.stringify(routeData));
+  //   } catch (error) {
+  //     Alert.alert('Error', 'Could not fetch offline directions.');
+  //   }
+  // };
 
   const fetchOnlineDirections = async () => {
     if (!currentLocation || !selectedLocation) {
@@ -317,7 +331,7 @@ const MapScreen = ({ navigation }) => {
           <Text style={styles.locationName}>{searchQuery}</Text>
           <View style={styles.iconContainer}>
             <TouchableOpacity onPress={fetchOnlineDirections}>
-              <FontAwesome name="location-arrow" size={20} color="#000" />
+              <FontAwesome name="location-arrow" size={26} color="#000" />
             </TouchableOpacity>
             <TouchableOpacity 
             onPress={() => {
@@ -329,10 +343,10 @@ const MapScreen = ({ navigation }) => {
               }
             }}
             >
-              <FontAwesome name="bookmark" size={20} color="#000" />
+              <FontAwesome name="bookmark" size={25} color="#000" />
             </TouchableOpacity>
             <TouchableOpacity onPress={handleShare}>
-              <FontAwesome name="share-alt" size={20} color="#000" />
+              <FontAwesome name="share-alt" size={25} color="#000" />
             </TouchableOpacity>
           </View>
         </View>
@@ -381,12 +395,12 @@ const styles = StyleSheet.create({
   },
   locationCard: {
     position: 'absolute',
-    bottom: 20,
-    left: 10,
-    right: 10,
+    bottom: 10,
+    left: 0,
+    right: 0,
     backgroundColor: '#fff',
     borderRadius: 10,
-    padding: 10,
+    padding: 30,
     elevation: 5,
     alignItems: 'center',
   },
@@ -403,7 +417,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     width: '100%',
-    marginTop: 10,
+    marginTop: 20,
   },
   route: {
     lineColor: '#48938F',
@@ -423,13 +437,13 @@ const styles = StyleSheet.create({
   
   suggestionsContainer: {
     position: 'absolute',
-    top: 60,
+    top: 85,
     left: 10,
     right: 10,
     backgroundColor: '#fff',
     borderRadius: 10,
-    elevation: 5,
-    padding: 5,
+    elevation: 7,
+    padding:13,
     maxHeight: 150,
     zIndex: 10,
   },

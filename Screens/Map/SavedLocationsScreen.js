@@ -5,11 +5,14 @@ import {
   StyleSheet, 
   TouchableOpacity, 
   FlatList, 
-  Alert 
+  Alert,
+  Dimensions
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { useFocusEffect } from '@react-navigation/native';
+
+const { width , height } = Dimensions.get('window');
 
 const SavedLocationsScreen = ({ navigation }) => {
   const [savedLocations, setSavedLocations] = useState([]);
@@ -21,22 +24,12 @@ const SavedLocationsScreen = ({ navigation }) => {
           const storedLocations = await AsyncStorage.getItem('savedLocations');
           if (storedLocations) {
             const parsedData = JSON.parse(storedLocations);
-  
-            // Log the raw stored data for debugging
-            console.log('Raw Stored Locations:', parsedData);
-  
-            // Filter out invalid data
-            const validLocations = parsedData.filter(item => {
-              return (
-                item &&
-                item.name &&
-                typeof item.name === 'string' &&
-                item.country &&
-                typeof item.country === 'string'
-              );
-            });
-  
-            console.log('Filtered Saved Locations:', validLocations); // Debugging
+
+            const validLocations = parsedData.filter(item => (
+              item &&
+              item.name && typeof item.name === 'string' &&
+              item.country && typeof item.country === 'string'
+            ));
             setSavedLocations(validLocations);
           }
         } catch (error) {
@@ -50,10 +43,7 @@ const SavedLocationsScreen = ({ navigation }) => {
   const handleLocationClick = async (location) => {
     try {
       const routeDataKey = `routeData_${location.name}`;
-      console.log('Fetching Route Data with Key:', routeDataKey);  // Debugging key
       const routeData = await AsyncStorage.getItem(routeDataKey);
-      console.log('Route Data:', routeData);  // Check if null or valid data is returned
-  
       if (routeData) {
         const parsedRouteData = JSON.parse(routeData);
         navigation.navigate('RouteDetailsScreen', { routeData: parsedRouteData });
@@ -65,39 +55,36 @@ const SavedLocationsScreen = ({ navigation }) => {
       Alert.alert('Error', 'An error occurred while retrieving the route data.');
     }
   };
-  
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity 
-        style={styles.backButton} 
-        onPress={() => navigation.goBack()}
-      >
-        <FontAwesome name="arrow-left" size={24} color="#000" />
-      </TouchableOpacity>
-      <Text style={styles.title}>Saved Locations</Text>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <FontAwesome name="arrow-left" size={24} color="#000" />
+        </TouchableOpacity>
+        <Text style={styles.title}>Saved Locations</Text>
+      </View>
+      
       {savedLocations.length === 0 ? (
         <Text style={styles.noDataText}>No saved locations found.</Text>
       ) : (
         <FlatList
           data={savedLocations}
           keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) => {
-            return (
-              <TouchableOpacity 
-                style={styles.locationCard}
-                onPress={() => handleLocationClick(item)} // Handle location click
-              >
-                <View style={styles.locationInfo}>
-                  <Text style={styles.locationName}>{item.name}</Text>
-                  <Text style={styles.locationDetails}>{item.country}</Text>
-                </View>
-                <TouchableOpacity style={styles.shareButton}>
-                  <FontAwesome name="share-alt" size={24} color="#000" />
-                </TouchableOpacity>
+          renderItem={({ item }) => (
+            <TouchableOpacity 
+              style={styles.locationCard}
+              onPress={() => handleLocationClick(item)}
+            >
+              <View style={styles.locationInfo}>
+                <Text style={styles.locationName}>{item.name}</Text>
+                <Text style={styles.locationDetails}>{item.country}</Text>
+              </View>
+              <TouchableOpacity style={styles.shareButton}>
+                <FontAwesome name="share-alt" size={24} color="#000" />
               </TouchableOpacity>
-            );
-          }}
+            </TouchableOpacity>
+          )}
         />
       )}
     </View>
@@ -108,51 +95,50 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingTop: 40,
+    paddingHorizontal: width * 0.05, // Adjust padding based on screen width
+    paddingTop: height * 0.03,
   },
-  backButton: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    padding: 10,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: height * 0.01,
+    marginBottom: height * 0.05,
   },
   title: {
-    fontSize: 24,
+    fontSize: width * 0.06, // Responsive font size
     fontWeight: 'bold',
     color: '#000',
-    textAlign: 'center',
-    marginBottom: 20,
+    marginLeft: width * 0.2, // Adjust spacing dynamically
   },
   noDataText: {
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: width * 0.04,
     color: '#777',
-    marginTop: 20,
+    marginTop: height * 0.02,
   },
   locationCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#E0F7FA',
+    backgroundColor: '#48938F',
     borderRadius: 10,
-    padding: 20,
-    marginBottom: 10,
+    padding: width * 0.05, // Responsive padding
+    marginBottom: height * 0.01,
   },
   locationInfo: {
     flex: 1,
   },
   locationName: {
-    fontSize: 18,
+    fontSize: width * 0.045, // Adjust font size based on width
     fontWeight: 'bold',
     color: '#000',
   },
   locationDetails: {
-    fontSize: 14,
+    fontSize: width * 0.035,
     color: '#555',
   },
   shareButton: {
-    padding: 10,
+    padding: width * 0.02,
   },
 });
 

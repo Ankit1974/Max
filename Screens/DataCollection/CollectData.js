@@ -1,5 +1,3 @@
-// Fixed the multiple picture are not saving issue jkn
-
 import React, {useState, useEffect} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
@@ -25,8 +23,11 @@ import Dialog from 'react-native-dialog';
 import {useRoute, useFocusEffect} from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
+import {useUploadStatus} from '../../ContextAPI/UploadStatusProvider';
 
 const CollectDataScreen = ({noteId}) => {
+  const {setUploadedNotes} =
+    useUploadStatus();
   const [selectedHabitats, setSelectedHabitats] = useState([]);
   const [selectedSubstrates, setSelectedSubstrates] = useState([]);
   const [selectedWaterTypes, setSelectedWaterTypes] = useState([]);
@@ -97,9 +98,8 @@ const CollectDataScreen = ({noteId}) => {
   const [note, setNote] = useState([]);
   const [getProjectName, setProjectname] = useState(projectName);
 
-  //console.log ( country)
-  console.log(noteSerial2);
-  console.log('projectName:', route.params?.note, projectName);
+  // console.log(noteSerial2);
+  // console.log('projectName:', route.params?.note, projectName);
 
   useEffect(() => {
     const fetchUserName = async () => {
@@ -107,7 +107,7 @@ const CollectDataScreen = ({noteId}) => {
         const userDataString = await AsyncStorage.getItem('UserData');
         if (userDataString) {
           const userData = JSON.parse(userDataString);
-          setUserName(userData.name || 'User'); // Assuming userData has a 'name' field
+          setUserName(userData.name || 'User'); 
         } else {
           console.log('UserData not found in AsyncStorage');
         }
@@ -161,11 +161,11 @@ const CollectDataScreen = ({noteId}) => {
   };
 
   // Log the current state of answers and whether the question is displayed
-  console.log(`[LOG] Current answers:`, answers);
-  console.log(
-    `[LOG] Question displayed for ${localityDesignation}:`,
-    !isAnswered,
-  );
+  // console.log(`[LOG] Current answers:`, answers);
+  // console.log(
+  //   `[LOG] Question displayed for ${localityDesignation}:`,
+  //   !isAnswered,
+  // );
 
   // Check if the answer exists for the current localityDesignation
   useEffect(() => {
@@ -191,7 +191,6 @@ const CollectDataScreen = ({noteId}) => {
     const fetchExpeditionNumber = async () => {
       try {
         if (country && projectId) {
-          const currentYear = new Date().getFullYear().toString().slice(-2); // Last 2 digits of the year
 
           // Get the current user
           const user = auth().currentUser;
@@ -207,14 +206,9 @@ const CollectDataScreen = ({noteId}) => {
             // Fetch the specific project document
             const projectSnapshot = await projectRef.get();
 
-            if (projectSnapshot.exists) {
-              const projectData = projectSnapshot.data();
+            if (projectSnapshot.exists) {          
 
-              // Extract the Number field from the project document
-              const projectNumber = parseInt(projectData.Number, 10);
-              const expedition = `E${projectNumber}`; // Increment the number for the new expedition
-
-              // Check if we are editing an existing note
+           // Check if we are editing an existing note
               //const formattedNoteSerial2 = parseInt(noteSerial2.replace(/[^\d]/g, ''), 10); // Convert to a number to remove leading zeros
               const localityNumber = route.params?.note
                 ? `L0${noteSerial2}` // Use the processed number for editing
@@ -233,10 +227,10 @@ const CollectDataScreen = ({noteId}) => {
               setLocalityDesignation(generatedDesignation);
 
               // Log the generated designation
-              console.log(
-                'Locality Designation Generated:',
-                generatedDesignation,
-              );
+              // console.log(
+              //   'Locality Designation Generated:',
+              //   generatedDesignation,
+              // );
             } else {
               console.log(`Project with ID ${projectId} does not exist.`);
             }
@@ -293,7 +287,7 @@ const CollectDataScreen = ({noteId}) => {
 
           // If route.params?.note exists, load that specific note
           if (route.params?.note) {
-            console.log('Loading specific note: ', route.params.note);
+           // console.log('Loading specific note: ', route.params.note);
             loadNoteData(route.params.note);
           } else {
             console.log('No notes available');
@@ -313,7 +307,7 @@ const CollectDataScreen = ({noteId}) => {
           loadNoteData(route.params.note);
         }
       };
-    }, [route.params?.note]), // Adding dependency on route.params?.note
+    }, [route.params?.note]), 
   );
 
   const toggleHabitat = habitat => {
@@ -401,20 +395,20 @@ const CollectDataScreen = ({noteId}) => {
       const notes = existingNotesData ? JSON.parse(existingNotesData) : [];
 
       // Log the retrieved notes for debugging
-      console.log('Existing Notes:', notes);
+      //console.log('Existing Notes:', notes);
 
       // Determine the note number
       const noteNumber = route.params?.note
         ? route.params.note.Serial // If editing, keep the same Serial
         : `${getProjectName}_L0${notes.length + 1}`; // New note gets the next number
 
-      console.log('noteNumber:', noteNumber);
+     // console.log('noteNumber:', noteNumber);
 
       const createdBy = `Created by ${userName}`;
 
       const newNote = {
-        id: route.params?.note?.id || `${projectId}-Note-${noteNumber}`, // Ensure unique ID
-        Serial: noteNumber, // Use the determined note number
+        id: route.params?.note?.id || `${projectId}-Note-${noteNumber}`, 
+        Serial: noteNumber, 
         createdBy: createdBy,
         selectedHabitats: selectedHabitats || [],
         selectedSubstrates: selectedSubstrates || [],
@@ -424,12 +418,12 @@ const CollectDataScreen = ({noteId}) => {
         abundance: abundance || 0,
         images: images.map((img, index) => ({
           uri: img.uri,
-          name: img.name || `Image-${index + 1}`, // Default name if not set
+          name: img.name || `Image-${index + 1}`, 
           sizeMB: img.sizeMB || 0,
         })),
         imagess: imagess.map((img, index) => ({
           uri: img.uri,
-          name: img.name || `Image-${index + 1}`, // Default name if not set
+          name: img.name || `Image-${index + 1}`, 
           sizeMB: img.sizeMB || 0,
         })),
         localityDesignation: localityDesignation || '',
@@ -447,7 +441,7 @@ const CollectDataScreen = ({noteId}) => {
       };
 
       // Log the new note object for debugging
-      console.log('New Note Object:', newNote);
+     // console.log('New Note Object:', newNote);
 
       if (route.params?.note) {
         // Update existing note
@@ -455,10 +449,12 @@ const CollectDataScreen = ({noteId}) => {
           note.Serial === route.params.note.Serial ? newNote : note,
         );
         await AsyncStorage.setItem(projectId, JSON.stringify(updatedNotes));
+        setUploadedNotes(updatedNotes);
       } else {
         // Add new note
         notes.push(newNote);
         await AsyncStorage.setItem(projectId, JSON.stringify(notes));
+        setUploadedNotes(notes);
       }
 
       // Trigger callback if provided
@@ -468,7 +464,6 @@ const CollectDataScreen = ({noteId}) => {
 
       // Navigate back to the ProjectDetails screen
       navigation.navigate('ProjectDetails', {projectId});
-      k;
     } catch (error) {
       console.error('Error saving note to AsyncStorage:', error);
     }
@@ -479,17 +474,17 @@ const CollectDataScreen = ({noteId}) => {
     try {
       const result = await launchCamera({
         mediaType: 'photo',
-        quality: 1,
+        quality: 0.7,
         saveToPhotos: true,
       });
 
       if (!result.didCancel && result.assets && result.assets.length > 0) {
         const imageUri = result.assets[0].uri;
         // Get the project number
-        const projectNumber = await getProjectNumber();
+       // const projectNumber = await getProjectNumber();
 
         // Set the expedition value dynamically
-        const expedition = `E${projectNumber}`;
+       // const expedition = `E${projectNumber}`;
 
         const vialCount = images.length + 1; // Increment for each habitat image
         const generatedImageName = `${projectName}_${localityNumber}_V0${vialCount}`;
@@ -501,7 +496,7 @@ const CollectDataScreen = ({noteId}) => {
 
         setImages([...images, newImage]); // Add the new image to the images array
 
-        console.log('Image captured and saved with name:', generatedImageName);
+        //console.log('Image captured and saved with name:', generatedImageName);
       }
     } catch (error) {
       console.error('Error capturing image:', error);
@@ -552,7 +547,7 @@ const CollectDataScreen = ({noteId}) => {
     const options = {
       mediaType: 'photo',
       cameraType: 'back',
-      quality: 1,
+      quality: 0.7,
     };
 
     try {
@@ -567,13 +562,13 @@ const CollectDataScreen = ({noteId}) => {
         const sizeInMB = (asset.fileSize / (1024 * 1024)).toFixed(2); // Convert fileSize to MB
 
         // Generate the image name automatically
-        const year = new Date().getFullYear().toString().slice(-2); // Last 2 digits of the year
+       // const year = new Date().getFullYear().toString().slice(-2); // Last 2 digits of the year
         //const expedition = 'E1';
         // Get the project number
-        const projectNumber = await getProjectNumber();
+       // const projectNumber = await getProjectNumber();
 
         // Set the expedition value dynamically
-        const expedition = `E${projectNumber}`;
+       // const expedition = `E${projectNumber}`;
         const habitatCount = imagess.length + 1; // Increment for each habitat image
         const generatedImageName = `${projectName}_${localityNumber}_H0${habitatCount}`;
 
@@ -582,10 +577,10 @@ const CollectDataScreen = ({noteId}) => {
           name: generatedImageName,
           sizeMB: sizeInMB,
         };
-        console.log('sdfsfsdf>>>>>>', imagess);
+        //console.log('sdfsfsdf>>>>>>', imagess);
         // Add the new image to the imagess state
         setImagess([...imagess, newImage]);
-        console.log('Image saved with name:', generatedImageName);
+        //console.log('Image saved with name:', generatedImageName);
       }
     } catch (error) {
       console.error('Error opening camera: ', error);
@@ -772,7 +767,10 @@ const CollectDataScreen = ({noteId}) => {
                       projectName,
                       localityNumber,
                       imageList: images,
-                      goBack: list => setImages(list),
+                      goBack: list => {
+                       // console.log('sdfsdfsdf>>>>>', list);
+                        setImages(list);
+                      },
                     });
                   } else {
                     console.error('Project ID is not defined!');
@@ -822,7 +820,7 @@ const CollectDataScreen = ({noteId}) => {
                   );
                   const projectId = route.params?.projectId;
 
-                  console.log('projectI:', projectId);
+                  //console.log('projectI:', projectId);
                   const noteNumber = route.params?.note
                     ? route.params.note.Serial // If editing, keep the same Serial
                     : `Note 0${note.length + 1}`; // New note gets the next number
@@ -1392,7 +1390,7 @@ const styles = StyleSheet.create({
   buttonText2: {
     fontSize: 16,
     fontWeight: '600',
-    color:"black"
+    color: 'black',
   },
 });
 
